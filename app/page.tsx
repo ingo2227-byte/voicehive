@@ -50,10 +50,36 @@ type FormState = {
 
 type ParsedPreview = ReturnType<typeof parseVoiceText>;
 
+type SpeechRecognitionResultLike = {
+  0: {
+    transcript: string;
+  };
+};
+
+type SpeechRecognitionEventLike = Event & {
+  results: {
+    0: SpeechRecognitionResultLike;
+  };
+};
+
+type SpeechRecognitionLike = {
+  lang: string;
+  interimResults: boolean;
+  maxAlternatives: number;
+  onstart: (() => void) | null;
+  onresult: ((event: SpeechRecognitionEventLike) => void) | null;
+  onerror: (() => void) | null;
+  onend: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+};
+
+type SpeechRecognitionConstructor = new () => SpeechRecognitionLike;
+
 declare global {
   interface Window {
-    webkitSpeechRecognition?: new () => SpeechRecognition;
-    SpeechRecognition?: new () => SpeechRecognition;
+    webkitSpeechRecognition?: SpeechRecognitionConstructor;
+    SpeechRecognition?: SpeechRecognitionConstructor;
   }
 }
 
@@ -93,7 +119,7 @@ export default function Home() {
   const [preview, setPreview] = useState<ParsedPreview | null>(null);
   const [missingQuestions, setMissingQuestions] = useState<string[]>([]);
   const [toast, setToast] = useState<ToastMessage | null>(null);
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
 
   const { isOnline, pendingCount, isSyncing, manualSync, refreshPendingCount } =
     useOfflineSync();
@@ -230,9 +256,9 @@ export default function Home() {
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
     recognition.onstart = () => setIsListening(true);
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
-      setVoiceText(event.results[0][0].transcript);
-    };
+    recognition.onresult = (event: SpeechRecognitionEventLike) => {
+  setVoiceText(event.results[0][0].transcript);
+};
     recognition.onerror = () => {
       setIsListening(false);
       pushToast("Spracherkennung fehlgeschlagen.", "error");
