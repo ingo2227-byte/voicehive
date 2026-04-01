@@ -371,12 +371,29 @@ export default function Home() {
       await loadHives();
       pushToast("Volk gelöscht.", "success");
     } catch {
-      addPendingAction({
-        id: createActionId(),
-        type: "delete",
-        hiveId: id,
-        createdAt: Date.now(),
-      });
+  if (isEditing) {
+    addPendingAction({
+      id: createActionId(),
+      type: "update",
+      hiveId: form.id,
+      payload,
+      createdAt: Date.now(),
+    });
+  } else {
+    addPendingAction({
+      id: createActionId(),
+      type: "create",
+      payload,
+      createdAt: Date.now(),
+    });
+  }
+
+  setForm(initialForm);
+  setVoiceText("");
+  setIsEditing(false);
+  refreshPendingCount();
+  pushToast("Offline gespeichert. Wird später synchronisiert.", "warning");
+}
 
       refreshPendingCount();
       setHives((prev) => prev.filter((item) => item.id !== id));
