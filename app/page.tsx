@@ -321,7 +321,7 @@ export default function Home() {
       setMissingQuestions([]);
       setIsEditing(false);
       refreshPendingCount();
-      pushToast("Offline gespeichert. Wird später synchronisiert.", "warning");
+      pushToast("Offline gespeichert. Wird später synchronisiert.", "info");
     } finally {
       setIsSaving(false);
     }
