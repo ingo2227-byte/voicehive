@@ -308,26 +308,33 @@ export default function Home() {
       await loadHives();
       refreshPendingCount();
       pushToast("Gespeichert.", "success");
-    } catch {
-      addPendingAction({
-        id: createActionId(),
-        type: isEditing ? "update" : "create",
-        ...(isEditing ? { hiveId: form.id } : {}),
-        payload,
-        createdAt: Date.now(),
-      } as const);
-
-      setForm(initialForm);
-      setVoiceText("");
-      setPreview(null);
-      setMissingQuestions([]);
-      setIsEditing(false);
-      refreshPendingCount();
-      pushToast("Offline gespeichert. Wird später synchronisiert.", "info");
-    } finally {
+ finally {
       setIsSaving(false);
     }
+  }} catch {
+  if (isEditing) {
+    addPendingAction({
+      id: createActionId(),
+      type: "update",
+      hiveId: form.id,
+      payload,
+      createdAt: Date.now(),
+    });
+  } else {
+    addPendingAction({
+      id: createActionId(),
+      type: "create",
+      payload,
+      createdAt: Date.now(),
+    });
   }
+
+  setForm(initialForm);
+  setVoiceText("");
+  setIsEditing(false);
+  refreshPendingCount();
+  pushToast("Offline gespeichert. Wird später synchronisiert.", "warning");
+}
 
   function editHive(hive: HiveListItem) {
     const latest = hive.latestInspection;
